@@ -2,23 +2,16 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+
 	"github.com/chenfei531/query-api/data"
 	"github.com/chenfei531/query-api/query/rql"
 )
 
 func main() {
-	s := `
-    {
-      "limit": 3,
-      "offset": 0,
-      "filter": {
-        "id": {"$gt": 9}
-      },
-      "sort": ["+name"],
-      "select": ["name"]
-    }
-    `
+	buf, _ := ioutil.ReadFile("test/data/rql_agent")
+	query := string(buf)
 	dm := data.NewSqliteDataManager()
-	resp := rql.Do(dm, "Agent", s)
+	resp := rql.Do(dm, "Agent", query)
 	fmt.Printf("%s \n", resp)
 }

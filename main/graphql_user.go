@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+
 	"github.com/chenfei531/query-api/data"
 	"github.com/chenfei531/query-api/query/graphql"
 )
@@ -9,19 +11,8 @@ import (
 func main() {
     dm := data.NewSqliteDataManager()
 	graphql.Init(dm)
-	query := `
-    {
-        user(id: 2){
-            id,
-			name,
-			agents(offset:2 limit:2){
-				id,
-				price,
-				name
-			},
-        }
-    }
-    `
+	buf, _ := ioutil.ReadFile("test/data/graphql_user")
+	query := string(buf)
 	result := graphql.Execute(query)
 	fmt.Printf("%s \n", result)
 }
