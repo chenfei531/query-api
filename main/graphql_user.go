@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-    dm := data.NewSqliteDataManager()
+	dm := data.NewSqliteDataManager()
 	graphql.Init(dm)
 	buf, _ := ioutil.ReadFile("test/data/graphql_user")
 	query := string(buf)
