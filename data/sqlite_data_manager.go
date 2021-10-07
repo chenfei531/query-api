@@ -12,13 +12,6 @@ type SqliteDataManager struct{
     db *gorm.DB
 }
 
-type DataManager interface {
-    GetUserByParams(p *model.Params) []model.User
-    GetAgentByParams(p *model.Params) []model.Agent
-    GetAgents(offset int, limit int) []model.Agent
-    GetUserById(id int) model.User
-}
-
 func NewSqliteDataManager() (*SqliteDataManager) {
     db, _ := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
     return &SqliteDataManager{db}
@@ -72,3 +65,4 @@ func (dm *SqliteDataManager) GetAgentByParams(p *model.Params) []model.Agent {
     }
     return agents
 }
+
