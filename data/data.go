@@ -14,8 +14,9 @@ type SqliteDataManager struct{
 
 type DataManager interface {
     GetUserByParams(p *model.Params) []model.User
-    GetAgents(offset int, limit int) []model.Agent
     GetAgentByParams(p *model.Params) []model.Agent
+    GetAgents(offset int, limit int) []model.Agent
+    GetUserById(id int) model.User
 }
 
 func NewSqliteDataManager() (*SqliteDataManager) {
@@ -23,10 +24,10 @@ func NewSqliteDataManager() (*SqliteDataManager) {
     return &SqliteDataManager{db}
 }
 
-func (dm *SqliteDataManager) GetUserWithAgent() []model.User {
-    var users []model.User
-    dm.db.Limit(10).Preload("Agents").Find(&users)
-    return users
+func (dm *SqliteDataManager) GetUserById(id int) model.User {
+    var user model.User
+    dm.db.Preload("Agents").First(&user, id)
+    return user
 }
 
 func (dm *SqliteDataManager) GetUserByParams(p *model.Params) []model.User {

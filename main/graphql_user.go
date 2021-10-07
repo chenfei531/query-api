@@ -11,8 +11,14 @@ func main() {
 	graphql.Init(dm)
 	query := `
     {
-        agents(offset:2 limit:2){
-            id
+        user(id: 2){
+            id,
+			name,
+			agents(offset:2 limit:2){
+				id,
+				price,
+				name
+			},
         }
     }
     `

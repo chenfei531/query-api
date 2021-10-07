@@ -12,7 +12,8 @@ func main() {
 	query := `
     {
         agents(offset:2 limit:2){
-            id
+            id,
+			price
         }
     }
     `
