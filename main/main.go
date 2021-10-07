@@ -1,31 +1,36 @@
 package main
 
 import (
-    "fmt"
-    //"github.com/chenfei531/query-api/data"
-    "github.com/chenfei531/query-api/rql"
+	"fmt"
+	"github.com/chenfei531/query-api/data"
+	"github.com/chenfei531/query-api/query/graphql"
+	"github.com/chenfei531/query-api/query/rql"
 )
 
 func main() {
-    //users := data.GetUserWithAgent()
-    //fmt.Printf("%s \n", users[1].Agents[1].Name)
-    s := `
+	s := `
     {
-      "limit": 25,
+      "limit": 10,
       "offset": 0,
       "filter": {
-        "price": {"$gt": 100}
+        "price": {"$gt": 900}
       },
-      "sort": ["+name"]
+      "sort": ["+name"],
+      "select": ["name"]
     }
     `
-    /*
-    r, error := rql.GetQueryParams(s)
-    if error != nil {
-        fmt.Printf("%s \n", error)
+	dm := data.NewDataManager()
+	resp := rql.Do(dm, s)
+	fmt.Printf("%s \n", resp)
+	fmt.Printf("-------\n")
+	graphql.Init(dm)
+	query := `
+    {
+        agents(offset:2 limit:2){
+            id
+        }
     }
-    fmt.Printf("%s \n", r)
-    */
-    resp := rql.Do(s)
-    fmt.Printf("%s \n", resp)
+    `
+	result := graphql.Execute(query)
+	fmt.Printf("%s \n", result)
 }
