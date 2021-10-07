@@ -11,7 +11,7 @@ import (
 
 var UserSchema graphql.Schema
 
-func Init(dm *data.DataManager) {
+func Init(dm data.DataManager) {
 	agentType := graphql.NewObject(graphql.ObjectConfig{
 		Name:        "Agent",
 		Description: "agent",

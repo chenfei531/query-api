@@ -8,25 +8,51 @@ import (
 	"github.com/chenfei531/query-api/model"
 )
 
-func Do(dm *data.DataManager, query_str string) string {
-	p, error := GetQueryParams(query_str)
-	if error != nil {
-		fmt.Printf("%s \n", error)
-	}
-
-	agents := dm.GetAgentByParams(p.Select, p.FilterExp, p.FilterArgs, p.Offset, p.Limit, p.Sort)
-	b, err := json.MarshalIndent(agents, "", "    ")
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-	return (string(b))
+/*
+type ParamSchema interface {
+    GetQueryParams(request string) (*model.Params, error)
 }
+*/
 
-func GetQueryParams(request string) (*Params, error) {
+func GetQueryParams(emptyObj interface{}, request string) (*model.Params, error) {
 	queryParser := MustNewParser(Config{
-		Model:    model.Agent{}, // TODO: move to parameter
+        // TODO: use reflect
+		Model:    emptyObj,
 		FieldSep: ".",
 	})
-	return queryParser.Parse([]byte(request))
+    p, error := queryParser.Parse([]byte(request))
+	return (*model.Params)(p), error
+}
+
+func Do(dm data.DataManager, resource string, query_str string) string {
+    //TODO: use reflect instead of 'if'
+    if resource == "Agent" {
+    	p, error := GetQueryParams(model.Agent{}, query_str)
+    	if error != nil {
+    		fmt.Printf("%s \n", error)
+    	}
+
+    	agents := dm.GetAgentByParams(p)
+    	b, err := json.MarshalIndent(agents, "", "    ")
+    	if err != nil {
+    		fmt.Println(err)
+    		return ""
+    	}
+    	return (string(b))
+    }
+    if resource == "User" {
+    	p, error := GetQueryParams(model.User{}, query_str)
+    	if error != nil {
+    		fmt.Printf("%s \n", error)
+    	}
+
+    	users := dm.GetUserByParams(p)
+    	b, err := json.MarshalIndent(users, "", "    ")
+    	if err != nil {
+    		fmt.Println(err)
+    		return ""
+    	}
+    	return (string(b))
+    }
+    return ""
 }
