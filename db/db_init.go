@@ -1,13 +1,15 @@
+//TODO: using git
 package main
 
-/*
 import (
-  "gorm.io/gorm"
-  "gorm.io/driver/sqlite"
+    "crypto/rand"
+    "fmt"
+    math_rand "math/rand"
 
-  "crypto/rand"
-  "fmt"
-  math_rand "math/rand"
+    "gorm.io/gorm"
+    "gorm.io/driver/sqlite"
+
+    "github.com/chenfei531/query-api/model"
 )
 
 func randomStr() string {
@@ -31,15 +33,14 @@ func main() {
   }
 
   // Migrate the schema
-  db.AutoMigrate(&User{}, &Agent{})
+  db.AutoMigrate(&model.User{}, &model.Agent{})
 
   // Create
   for i := 0; i < 100; i++ {
-      user := User{Name: "user_" + randomStr()}
+      user := model.User{Name: "user_" + randomStr()}
       db.Create(&user)
       for j := 0; j < 10; j++ {
-  		db.Create(&Agent{Name: "agent_" + randomStr(), Price: randomInt(), UserID: user.ID})
+  		db.Create(&model.Agent{Name: "agent_" + randomStr(), Price: randomInt(), UserID: user.ID})
   	}
   }
 }
-*/

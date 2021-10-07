@@ -1,19 +1,20 @@
-package main
+package model
 
 import (
-  "gorm.io/gorm"
-  //"gorm.io/driver/sqlite"
+  //"gorm.io/gorm"
 )
 
 type User struct {
-  gorm.Model
-  Name  string
+  //gorm.Model
+  ID uint `gorm:"primary_key" rql:"filter,sort"`
+  Name  string `rql:"filter,sort"`
   Agents []Agent
 }
 
 type Agent struct {
-    gorm.Model
-    Name string
-    Price uint
-    UserID uint
+    //gorm.Model
+    ID uint `gorm:"primary_key" rql:"filter,sort"`
+    Name string `rql:"filter,sort"`
+    Price uint `rql:"filter"`
+    UserID uint `rql:"filter"`
 }
