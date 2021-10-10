@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	math_rand "math/rand"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -22,8 +23,8 @@ func randomStr() string {
 	return s
 }
 
-func randomInt() uint {
-	return uint(math_rand.Intn(1000) + 1)
+func randomInt(max int) uint {
+	return uint(math_rand.Intn(max) + 1)
 }
 
 func main() {
@@ -36,11 +37,11 @@ func main() {
 	db.AutoMigrate(&model.User{}, &model.Agent{})
 
 	// Create
-	for i := 0; i < 100; i++ {
-		user := model.User{Name: "user_" + randomStr()}
+	for i := 0; i < 10; i++ {
+		user := model.User{Name: "user_" + randomStr(), Age: randomInt(50)}
 		db.Create(&user)
-		for j := 0; j < 10; j++ {
-			db.Create(&model.Agent{Name: "agent_" + randomStr(), Price: randomInt(), UserID: user.ID})
+		for j := 0; j < 2; j++ {
+			db.Create(&model.Agent{Name: "agent_" + randomStr(), CreateAt: time.Now(), UserID: user.ID})
 		}
 	}
 }

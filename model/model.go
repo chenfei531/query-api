@@ -1,22 +1,23 @@
 package model
 
 import (
-//"gorm.io/gorm"
+	"time"
 )
 
 type User struct {
 	//gorm.Model
 	ID     uint   `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
 	Name   string `rql:"filter,sort" json:",omitempty"`
+	Age    uint   `rql:"filter,sort" json:",omitempty"`
 	Agents []Agent
 }
 
 type Agent struct {
 	//gorm.Model
-	ID     uint   `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
-	Name   string `rql:"filter,sort" json:",omitempty"`
-	Price  uint   `rql:"filter,sort" json:",omitempty"`
-	UserID uint   `rql:"filter,sort" json:",omitempty"`
+	ID       uint      `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
+	Name     string    `rql:"filter,sort" json:",omitempty"`
+	CreateAt time.Time `rql:"filter,sort" json:",omitempty"`
+	UserID   uint      `rql:"filter,sort" json:",omitempty"`
 }
 
 type Params struct {

@@ -26,12 +26,12 @@ func Init(dm data.DataManager) {
 					return nil, nil
 				},
 			},
-			"price": &graphql.Field{
+			"createAt": &graphql.Field{
 				Type:        graphql.Int,
-				Description: "price of agent",
+				Description: "create time of agent",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if agent, ok := p.Source.(model.Agent); ok {
-						return agent.Price, nil
+						return agent.CreateAt, nil
 					}
 					return nil, nil
 				},

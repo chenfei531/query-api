@@ -26,23 +26,18 @@ func (dm *SqliteDataManager) GetUserById(id int) model.User {
 func (dm *SqliteDataManager) GetUserByParams(p *model.Params) []model.User {
 	var users []model.User
 
-	error := dm.db. //Select(p.Select).
-			Where(p.FilterExp, p.FilterArgs).
-			Offset(p.Offset).
-			Limit(p.Limit).
-			Preload("Agents").
-			Order(p.Sort).
-			Find(&users).Error
+	fmt.Printf("%s\n", p.Select)
+	//Select: must contain ID, otherwise preload will not work
+	error := dm.db.Select(p.Select).
+		Where(p.FilterExp, p.FilterArgs).
+		Offset(p.Offset).
+		Limit(p.Limit).
+		Order(p.Sort).
+		Preload("Agents").
+		Find(&users).Error
 	if error != nil {
 		fmt.Printf("query error: %s \n", error)
 	}
-	/*
-	   // currently preload does not work with select
-	   //reference: https://github.com/go-gorm/gorm/issues/4015
-	   dm.db.Model(&model.User{}).Preload("Agents", func(tx *gorm.DB) *gorm.DB{
-	       return tx.Select("Name").Where(p.FilterExp, p.FilterArgs).Offset(p.Offset).Limit(p.Limit).Order(p.Sort)
-	       }).Find(&users)
-	*/
 	return users
 }
 
