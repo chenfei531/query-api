@@ -25,34 +25,33 @@ func GetQueryParams(emptyObj interface{}, request string) (*model.Params, error)
 }
 
 func Do(dm data.DataManager, resource string, query_str string) string {
-	//TODO: use reflect instead of 'if'
-	if resource == "Agent" {
-		p, error := GetQueryParams(model.Agent{}, query_str)
+	var b []byte
+	var err error
+	switch(resource) {
+	case "User":
+		user := model.User{}
+		p, error := GetQueryParams(&user, query_str)
 		if error != nil {
 			fmt.Printf("%s \n", error)
 		}
-
-		agents := dm.GetAgentByParams(p)
-		b, err := json.MarshalIndent(agents, "", "    ")
-		if err != nil {
-			fmt.Println(err)
-			return ""
-		}
-		return (string(b))
-	}
-	if resource == "User" {
-		p, error := GetQueryParams(model.User{}, query_str)
+		users := make([]model.User, 0)
+		dm.GetDataByParams(&users, p)
+		b, err = json.MarshalIndent(users, "", "    ")
+	case "Agent":
+		agent := model.Agent{}
+		p, error := GetQueryParams(&agent, query_str)
 		if error != nil {
 			fmt.Printf("%s \n", error)
 		}
-
-		users := dm.GetUserByParams(p)
-		b, err := json.MarshalIndent(users, "", "    ")
-		if err != nil {
-			fmt.Println(err)
-			return ""
-		}
-		return (string(b))
+		agents := make([]model.Agent, 0)
+		dm.GetDataByParams(&agents, p)
+		b, err = json.MarshalIndent(agents, "", "    ")
+	default:
+		return ""
 	}
-	return ""
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return (string(b))
 }

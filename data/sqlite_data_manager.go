@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"reflect"
 
 	"github.com/chenfei531/query-api/model"
 )
 
 type SqliteDataManager struct {
 	db *gorm.DB
+}
+
+type selectParams struct {
+	 fields []string
+	 nestedField map[string][]string
 }
 
 func NewSqliteDataManager() *SqliteDataManager {
@@ -23,40 +29,29 @@ func (dm *SqliteDataManager) GetUserById(id int) model.User {
 	return user
 }
 
-func (dm *SqliteDataManager) GetUserByParams(p *model.Params) []model.User {
-	var users []model.User
+func (sp selectParams) getSelectParams(selectParams []string) {
 
-	fmt.Printf("%s\n", p.Select)
-	//Select: must contain ID, otherwise preload will not work
-	error := dm.db.Select(p.Select).
+}
+
+func (dm *SqliteDataManager) GetDataByParams(data interface{}, p *model.Params) {
+	t := reflect.TypeOf(data).Elem().Elem().Field(0).Tag
+	fmt.Printf("%s\n", t)
+
+	/*
+	Select: must contain ID, otherwise preload will not work
+	select does not work with preloaded fields: https://github.com/go-gorm/gorm/issues/4015
+	*/
+	tx := dm.db.Select(p.Select).
 		Where(p.FilterExp, p.FilterArgs).
 		Offset(p.Offset).
 		Limit(p.Limit).
-		Order(p.Sort).
-		Preload("Agents").
-		Find(&users).Error
-	if error != nil {
-		fmt.Printf("query error: %s \n", error)
-	}
-	return users
+		Order(p.Sort)
+	tx = tx.Preload("Agents")
+	tx.Find(data)
 }
 
 func (dm *SqliteDataManager) GetAgents(offset int, limit int) []model.Agent {
 	var agents []model.Agent
 	dm.db.Offset(offset).Limit(limit).Find(&agents)
-	return agents
-}
-
-func (dm *SqliteDataManager) GetAgentByParams(p *model.Params) []model.Agent {
-	var agents []model.Agent
-	error := dm.db.Select(p.Select).
-		Where(p.FilterExp, p.FilterArgs).
-		Offset(p.Offset).
-		Limit(p.Limit).
-		Order(p.Sort).
-		Find(&agents).Error
-	if error != nil {
-		fmt.Printf("query error: %s \n", error)
-	}
 	return agents
 }

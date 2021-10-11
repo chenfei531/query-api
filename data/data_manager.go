@@ -6,8 +6,7 @@ import (
 
 type DataManager interface {
 	GetUserById(id int) model.User
-	GetUserByParams(p *model.Params) []model.User
-
 	GetAgents(offset int, limit int) []model.Agent
-	GetAgentByParams(p *model.Params) []model.Agent
+
+	GetDataByParams(data interface{}, p *model.Params)
 }

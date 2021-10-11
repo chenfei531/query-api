@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+//ModelMap := map[string]
+
 type User struct {
 	//gorm.Model
 	ID     uint   `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
