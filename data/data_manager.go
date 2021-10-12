@@ -8,5 +8,8 @@ type DataManager interface {
 	GetUserById(id int) model.User
 	GetAgents(offset int, limit int) []model.Agent
 
-	GetDataByParams(data interface{}, p *model.Params)
+	GetDataByNameAndParams(name string, p *model.Params) (string, error)
+
+	getDataByParams(data interface{}, p *model.Params) (interface{}, error)
+	getDataByNameAndParams(name string, p *model.Params) (interface{}, error)
 }

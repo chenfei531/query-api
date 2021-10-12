@@ -1,9 +1,9 @@
 {
-  "limit": 2,
+  "limit": 3,
   "offset": 0,
   "filter": {
     "id": {"$gt": 0}
   },
   "sort": ["+name"],
-  "select": ["ID", "name"]
+  "select": ["ID", "Name"]
 }

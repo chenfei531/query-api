@@ -197,7 +197,7 @@ func (p *Parser) ParseQuery(q *Query) (pr *Params, err error) {
 	if len(pr.Sort) == 0 && len(p.DefaultSort) > 0 {
 		pr.Sort = p.sort(p.DefaultSort)
 	}
-	pr.Select = strings.Join(q.Select, ", ")
+	pr.Select = q.Select //strings.Join(q.Select, ", ")
 	parseStatePool.Put(ps)
 	return
 }
