@@ -9,7 +9,5 @@ type DataManager interface {
 	GetAgents(offset int, limit int) []model.Agent
 
 	GetDataByNameAndParams(name string, p *model.Params) (string, error)
-
 	getDataByParams(data interface{}, p *model.Params) (interface{}, error)
-	getDataByNameAndParams(name string, p *model.Params) (interface{}, error)
 }

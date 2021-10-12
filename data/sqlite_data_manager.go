@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"errors"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -28,9 +29,12 @@ func NewSqliteDataManager() *SqliteDataManager {
 	return &SqliteDataManager{db}
 }
 
-func getSelectParams(dataType reflect.Type, selectParams []string) (sp *SelectParams) {
+func getSelectParams(data interface{}, selectParams []string) (*SelectParams, error) {
+	dataType := reflect.TypeOf(data)
 	//assuming primary key must be ID
 	//(no customized primary key name, no composite primary key)
+
+	//TODO: add field validation
 	pk := "ID"
 	containPK := true
 	var fields []string
@@ -40,24 +44,24 @@ func getSelectParams(dataType reflect.Type, selectParams []string) (sp *SelectPa
 		if strings.Contains(s, ".") {
 			elems := strings.Split(s, ".")
 			if len(elems) != 2 {
-				panic("syntax error: only support 1 level of nested data")
+				return nil, errors.New("syntax error: only support 1 level of nested data")
 			}
-			if val, ok := nestedFields[elems[0]]; ok {
-				nestedFields[elems[0]] = append(val, elems[1])
+			k, v := elems[0], elems[1]
+			if _, ok := nestedFields[k]; ok {
+				nestedFields[k] = append(nestedFields[k], v)
 			} else {
-				panic("syntax error: sub field not found")
+				nestedFields[k] = []string{}
+				nestedFields[k] = append(nestedFields[k], elems[1])
 			}
 		} else {
 			f, _ := dataType.FieldByName(s)
 			if f.Type.Kind() != reflect.Slice {
 				fields = append(fields, s)
-			} else {
-				nestedFields[s] = []string{}
 			}
 		}
 	}
 
-	return &SelectParams{primaryKey: pk, containPK: containPK, field: fields, nestedField: nestedFields}
+	return &SelectParams{primaryKey: pk, containPK: containPK, field: fields, nestedField: nestedFields}, nil
 }
 
 func (dm *SqliteDataManager) getDataByParams(data interface{}, p *model.Params) (interface{}, error) {
@@ -76,16 +80,11 @@ func (dm *SqliteDataManager) getDataByParams(data interface{}, p *model.Params) 
 	if len(p.Sort) > 0 {
 		tx.Order(p.Sort)
 	}
+	if len(p.Select) > 0 {
+		tx.Select(strings.Join(p.Select, ", "))
+	}
 	error := tx.Find(result).Error
 	return result, error
-}
-
-func (dm *SqliteDataManager) getDataByNameAndParams(name string, p *model.Params) (interface{}, error) {
-	data, error := model.GetObjectByName(name)
-	if nil != error {
-		return nil, error
-	}
-	return dm.getDataByParams(data, p)
 }
 
 func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params) (string, error) {
@@ -93,20 +92,35 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 	if nil != error {
 		return "", error
 	}
-	dataType := reflect.TypeOf(data)
-	sp := getSelectParams(dataType, p.Select)
+	sp, error := getSelectParams(data, p.Select)
+	if nil != error {
+		return "", error
+	}
+
 	fmt.Printf("primary key: %s\n", sp.primaryKey)
 	fmt.Printf("fields: %s\n", sp.field)
 	fmt.Printf("map: %s\n", sp.nestedField)
 
-	users, _ := dm.getDataByNameAndParams("User", p)
-	agents, _ := dm.getDataByNameAndParams("Agent", &model.Params{})
+	p.Select = sp.field
+	users, error := dm.getDataByParams(data, p)
+	if nil != error {
+		return "", error
+	}
+	//get user ids
+
+	//query agents
+
+	//fill user with agents
+
+
+	/*
+	agents, _ := dm.getDataByParams(model.Agent{}, &model.Params{})
 	user1 := reflect.ValueOf(users).Elem().Index(0)
-	//agent1 := reflect.ValueOf(agents).Elem().Index(0)
+	agent1 := reflect.ValueOf(agents).Elem().Index(0)
 	test := user1.FieldByName("Agents")
 	test.Set(reflect.ValueOf(agents).Elem())
+	*/
 	b, _ := json.MarshalIndent(users, "", "    ")
-
 	return string(b), nil
 }
 
