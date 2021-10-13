@@ -18,6 +18,7 @@ func GetQueryParamsByName(name string, request string) (*model.Params, error) {
 	if nil != error {
 		return nil, error
 	}
+	//TODO: cache Parser
 	queryParser := MustNewParser(Config{Model: data, FieldSep: "."})
 	p, error := queryParser.Parse([]byte(request))
 	return (*model.Params)(p), error
