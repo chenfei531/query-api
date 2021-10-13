@@ -2,7 +2,6 @@ package data
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"strings"
 	"errors"
@@ -96,19 +95,16 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 	if nil != error {
 		return "", error
 	}
-
-	fmt.Printf("FilterExp: %s\n", p.FilterExp)
-	fmt.Printf("FilterArgs: %s\n", p.FilterArgs)
-	fmt.Printf("primary key: %s\n", sp.primaryKey)
-	fmt.Printf("fields: %s\n", sp.field)
-	fmt.Printf("map: %s\n", sp.nestedField)
-
+	//get parents
 	p.Select = sp.field
+
+	//TODO: remove if necessary, get Primary Key by Tag
+	p.Select = append(p.Select, "ID")
 	results, error := dm.getDataByParams(data, p)
 	if nil != error {
 		return "", error
 	}
-
+	//get children
 	if len(sp.nestedField) == 0 {
 		b, _ := json.MarshalIndent(results, "", "    ")
 		return string(b), nil
@@ -123,7 +119,6 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 		idList = append(idList, id)
 		idIndexMap[id] = uint(i)
 	}
-	fmt.Printf("idList[0]:%d\n", idList[0])
 
 	for childName, selectList := range sp.nestedField {
 		//query Children
@@ -132,8 +127,10 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 		for i := 0; i < len(idList); i++ {
 			childParams.FilterArgs = append(childParams.FilterArgs, idList[uint(i)])
 		}
+		//TODO: remove if not necessary
+		selectList = append(selectList, "user_id")
+
 		childParams.Select = selectList
-		fmt.Printf("%s\n", childParams.Select)
 
 		data, error := model.GetObjectByName(childName)
 		if nil != error {
@@ -144,7 +141,6 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 			return "", nil
 		}
 		//insert children into parents
-
 		childrenReflect := reflect.ValueOf(children).Elem()
 
 		for i := 0; i < childrenReflect.Len(); i++ {
@@ -152,40 +148,11 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 			parentIndex := int(idIndexMap[foreignId])
 			parent := reflect.ValueOf(results).Elem().Index(parentIndex)
 			childField := parent.FieldByName("Agents")
-			if childField.Len() == 0 {
-				dataType := reflect.TypeOf(model.Agent{})
-				buf := reflect.New(reflect.SliceOf(dataType)).Elem()
-				buf = reflect.Append(buf, reflect.ValueOf(children).Elem().Index(i))
-				fmt.Printf("size:%d\n", childField.Len())
-				childField.Set(buf)
-			} else {
-				childField = reflect.Append(childField, reflect.ValueOf(children).Elem().Index(i))
-			}
+			buf := childField
+			buf = reflect.Append(buf, reflect.ValueOf(children).Elem().Index(i))
+			childField.Set(buf)
 		}
-
-
-/*
-		result1 := reflect.ValueOf(results).Elem().Index(0)
-		child1 := reflect.ValueOf(children).Elem().Index(0)
-		child2 := reflect.ValueOf(children).Elem().Index(1)
-		test := result1.FieldByName("Agents")
-		dataType := reflect.TypeOf(model.Agent{})
-		buf := reflect.New(reflect.SliceOf(dataType)).Elem()
-		buf = reflect.Append(buf, child1)
-		buf = reflect.Append(buf, child2)
-		fmt.Printf("buf:%s\n", buf)
-		test.Set(buf)
-*/
-
-
 	}
-	/*
-	agents, _ := dm.getDataByParams(model.Agent{}, &model.Params{})
-	user1 := reflect.ValueOf(users).Elem().Index(0)
-	agent1 := reflect.ValueOf(agents).Elem().Index(0)
-	test := user1.FieldByName("Agents")
-	test.Set(reflect.ValueOf(agents).Elem())
-	*/
 	b, _ := json.MarshalIndent(results, "", "    ")
 	return string(b), nil
 }

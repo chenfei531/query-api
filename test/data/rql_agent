@@ -5,5 +5,5 @@
     "id": {"$gt": 9}
   },
   "sort": ["+name"],
-  "select": ["name", "id"]
+  "select": ["Name", "ID"]
 }
