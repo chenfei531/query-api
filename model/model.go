@@ -17,10 +17,10 @@ type User struct {
 
 type Agent struct {
 	//gorm.Model
-	ID       uint      `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
-	Name     string    `rql:"filter,sort" json:",omitempty"`
+	ID       uint       `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
+	Name     string     `rql:"filter,sort" json:",omitempty"`
 	CreateAt *time.Time `rql:"filter,sort" json:",omitempty"`
-	UserID   uint      `rql:"filter,sort" json:",omitempty"`
+	UserID   uint       `rql:"filter,sort" json:",omitempty"`
 }
 
 func GetObjectByName(name string) (interface{}, error) {

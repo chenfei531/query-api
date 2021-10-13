@@ -2,7 +2,6 @@ package graphql
 
 import (
 	"encoding/json"
-
 	"github.com/graphql-go/graphql"
 
 	"github.com/chenfei531/query-api/data"
@@ -12,7 +11,7 @@ import (
 var UserSchema graphql.Schema
 
 func Init(dm data.DataManager) {
-	agentType := graphql.NewObject(graphql.ObjectConfig{
+	agentObject := graphql.NewObject(graphql.ObjectConfig{
 		Name:        "Agent",
 		Description: "agent",
 		Fields: graphql.Fields{
@@ -27,7 +26,7 @@ func Init(dm data.DataManager) {
 				},
 			},
 			"createAt": &graphql.Field{
-				Type:        graphql.Int,
+				Type:        graphql.DateTime,
 				Description: "create time of agent",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if agent, ok := p.Source.(model.Agent); ok {
@@ -50,7 +49,7 @@ func Init(dm data.DataManager) {
 	})
 
 	agentsField := &graphql.Field{
-		Type:        graphql.NewList(agentType),
+		Type:        graphql.NewList(agentObject),
 		Description: "agents",
 		Args: graphql.FieldConfigArgument{
 			"offset": &graphql.ArgumentConfig{
@@ -75,7 +74,7 @@ func Init(dm data.DataManager) {
 		},
 	}
 
-	userType := graphql.NewObject(graphql.ObjectConfig{
+	userObject := graphql.NewObject(graphql.ObjectConfig{
 		Name:        "User",
 		Description: "User",
 		Fields: graphql.Fields{
@@ -103,30 +102,36 @@ func Init(dm data.DataManager) {
 		},
 	})
 
-	queryType := graphql.NewObject(graphql.ObjectConfig{
+	userField := &graphql.Field{
+		Type:        userObject,
+		Description: "user",
+		Args: graphql.FieldConfigArgument{
+			"id": &graphql.ArgumentConfig{
+				Description: "id of user",
+				Type:        graphql.Int,
+			},
+		},
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			id, ok := (p.Args["id"]).(int)
+			if ok == false {
+				return nil, nil
+			}
+			return dm.GetUserById(id), nil
+		},
+	}
+
+	queryObject := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"user": &graphql.Field{
-				Type:        userType,
-				Description: "user",
-				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Description: "id of user",
-						Type:        graphql.Int,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					id, ok := (p.Args["id"]).(int)
-					if ok == false {
-						return nil, nil
-					}
-					return dm.GetUserById(id), nil
-				},
-			},
+			"user":   userField,
 			"agents": agentsField,
 		},
 	})
-	UserSchema, _ = graphql.NewSchema(graphql.SchemaConfig{Query: queryType})
+	//Schema->Object->Field
+	//Field: describe struct of the Schema
+	//Object: describe non primitive type fields
+	//Interface: describe common attributes for objects implement it
+	UserSchema, _ = graphql.NewSchema(graphql.SchemaConfig{Query: queryObject})
 }
 
 func Execute(query string) string {
