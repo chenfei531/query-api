@@ -5,5 +5,5 @@
     "id": {"$gt": 0}
   },
   "sort": ["+name"],
-  "select": ["Name", "Agent.Name"]
+  "select": ["Name", "Agent.name", "Agent.create_at"]
 }

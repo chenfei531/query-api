@@ -5,9 +5,10 @@ import (
 )
 
 type DataManager interface {
-	GetUserById(id int) model.User
-	GetAgents(offset int, limit int) []model.Agent
-
+	//interface for rql
 	GetDataByNameAndParams(name string, p *model.Params) (string, error)
 	getDataByParams(data interface{}, p *model.Params) (interface{}, error)
+	//interface for graphql
+	GetUserById(id int) model.User
+	GetAgents(offset int, limit int) []model.Agent
 }

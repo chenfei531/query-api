@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"encoding/json"
 	"reflect"
 	"strings"
@@ -28,14 +29,16 @@ func NewSqliteDataManager() *SqliteDataManager {
 	return &SqliteDataManager{db}
 }
 
+/*
+	init params for orm query with one level of nested field
+*/
 func getSelectParams(data interface{}, selectParams []string) (*SelectParams, error) {
 	dataType := reflect.TypeOf(data)
-	//assuming primary key must be ID
-	//(no customized primary key name, no composite primary key)
-
+	//assuming primary key must be ID (no customized primary key name, no composite primary key)
+	//TODO: get primary Key from metadata
 	//TODO: add field validation
 	pk := "ID"
-	containPK := true
+	containPK := false
 	var fields []string
 	nestedFields := make(map[string][]string)
 
@@ -56,13 +59,21 @@ func getSelectParams(data interface{}, selectParams []string) (*SelectParams, er
 			f, _ := dataType.FieldByName(s)
 			if f.Type.Kind() != reflect.Slice {
 				fields = append(fields, s)
+				if f.Name == pk {
+					containPK = true
+				}
 			}
 		}
+	}
+	if !containPK {
+		fields = append(fields, pk)
 	}
 
 	return &SelectParams{primaryKey: pk, containPK: containPK, field: fields, nestedField: nestedFields}, nil
 }
 
+//Select does not work for Preloaded object
+//https://github.com/go-gorm/gorm/issues/4015
 func (dm *SqliteDataManager) getDataByParams(data interface{}, p *model.Params) (interface{}, error) {
 	dataType := reflect.TypeOf(data)
 	result := reflect.New(reflect.SliceOf(dataType)).Interface()
@@ -86,6 +97,9 @@ func (dm *SqliteDataManager) getDataByParams(data interface{}, p *model.Params) 
 	return result, error
 }
 
+/*
+	query required field of both parent and child
+*/
 func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params) (string, error) {
 	data, error := model.GetObjectByName(name)
 	if nil != error {
@@ -97,14 +111,11 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 	}
 	//get parents
 	p.Select = sp.field
-
-	//TODO: remove if necessary, get Primary Key by Tag
-	p.Select = append(p.Select, "ID")
 	results, error := dm.getDataByParams(data, p)
 	if nil != error {
 		return "", error
 	}
-	//get children
+	//return if no children field are required
 	if len(sp.nestedField) == 0 {
 		b, _ := json.MarshalIndent(results, "", "    ")
 		return string(b), nil
@@ -115,20 +126,26 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 	idIndexMap := make(map[uint64]uint)
 	resultsReflect := reflect.ValueOf(results).Elem()
 	for i := 0; i < resultsReflect.Len(); i++ {
-		id := resultsReflect.Index(i).FieldByName("ID").Uint()
+		pkField := resultsReflect.Index(i).FieldByName("ID")
+		id := pkField.Uint()
 		idList = append(idList, id)
 		idIndexMap[id] = uint(i)
+		//remove primary key of parent if necessary
+		if !sp.containPK {
+			pkField.SetUint(0)
+		}
 	}
 
+	//using parents id to query children
 	for childName, selectList := range sp.nestedField {
-		//query Children
-		//TODO: get "UserID" from primary key of parent
-		childParams := model.Params{Select: sp.field, FilterExp: "user_id IN (?)", FilterArgs: make([]interface{}, 0, 8)}
+		fkFieldName := name + sp.primaryKey
+		fkDBName := name + "_" + sp.primaryKey
+		childParams := model.Params{Select: sp.field, FilterExp: fkDBName + " IN (?)", FilterArgs: make([]interface{}, 0, 8)}
 		for i := 0; i < len(idList); i++ {
 			childParams.FilterArgs = append(childParams.FilterArgs, idList[uint(i)])
 		}
-		//TODO: remove if not necessary
-		selectList = append(selectList, "user_id")
+
+		selectList = append(selectList, fkDBName)
 
 		childParams.Select = selectList
 
@@ -144,13 +161,19 @@ func (dm *SqliteDataManager) GetDataByNameAndParams(name string, p *model.Params
 		childrenReflect := reflect.ValueOf(children).Elem()
 
 		for i := 0; i < childrenReflect.Len(); i++ {
-			foreignId := childrenReflect.Index(i).FieldByName("UserID").Uint()
+			childFieldName := childName + "s"
+			foreignId := childrenReflect.Index(i).FieldByName(fkFieldName).Uint()
 			parentIndex := int(idIndexMap[foreignId])
 			parent := reflect.ValueOf(results).Elem().Index(parentIndex)
-			childField := parent.FieldByName("Agents")
-			buf := childField
-			buf = reflect.Append(buf, reflect.ValueOf(children).Elem().Index(i))
-			childField.Set(buf)
+			childrenField := parent.FieldByName(childFieldName)
+			buf := childrenField
+			//remove unwanted fields
+			childReflect := reflect.ValueOf(children).Elem().Index(i)
+			childReflect.FieldByName(fkFieldName).SetUint(0)
+
+			//append children to parents
+			buf = reflect.Append(buf, childReflect)
+			childrenField.Set(buf)
 		}
 	}
 	b, _ := json.MarshalIndent(results, "", "    ")

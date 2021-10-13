@@ -41,7 +41,8 @@ func main() {
 		user := model.User{Name: "user_" + randomStr(), Age: randomInt(50)}
 		db.Create(&user)
 		for j := 0; j < 2; j++ {
-			db.Create(&model.Agent{Name: "agent_" + randomStr(), CreateAt: time.Now(), UserID: user.ID})
+			createAt := time.Now()
+			db.Create(&model.Agent{Name: "agent_" + randomStr(), CreateAt: &createAt, UserID: user.ID})
 		}
 	}
 }
