@@ -1,9 +1,10 @@
+Target
 {
   "limit": 4,
   "offset": 0,
   "filter": {
-    "id": {"$gt": 9}
+    "id": {"$gt": 0}
   },
   "sort": ["+name"],
-  "select": ["Name", "ID"]
+  "select": ["Name", "ID", "MonitorLog.*"]
 }
