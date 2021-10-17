@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"strings"
+	"fmt"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -88,6 +89,7 @@ func (dm *SqliteDataManager) getDataByParams(data interface{}, p *model.Params) 
 	}
 	if len(p.Sort) > 0 {
 		tx.Order(p.Sort)
+		fmt.Printf("%s\n", p.Sort)
 	}
 	if len(p.Select) > 0 {
 		tx.Select(strings.Join(p.Select, ", "))

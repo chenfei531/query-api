@@ -5,6 +5,6 @@ Target
   "filter": {
     "id": {"$gt": 0}
   },
-  "sort": ["+name"],
-  "select": ["Name", "ID", "MonitorLog.*"]
+  "sort": ["name"],
+  "select": ["Name", "MonitorLog"]
 }
