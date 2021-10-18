@@ -3,9 +3,9 @@ package data
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
-	"fmt"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
