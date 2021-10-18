@@ -6,5 +6,5 @@ User
     "id": {"$gt": 0}
   },
   "sort": ["+name"],
-  "select": ["Name", "ID", "Agent.*"]
+  "select": ["Name", "ID", "Agent"]
 }

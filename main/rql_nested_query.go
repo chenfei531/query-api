@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	buf, _ := ioutil.ReadFile("test/data/query_rql")
+	buf, _ := ioutil.ReadFile("test/data/nested_query")
 	array := strings.SplitAfterN(string(buf), "\n", 2)
 	resource := strings.TrimSpace(array[0])
 	queryStr := array[1]
