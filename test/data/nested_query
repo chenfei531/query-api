@@ -3,8 +3,11 @@ User
   "limit": 4,
   "offset": 0,
   "filter": {
-    "id": {"$gt": 0}
+        "$and": [
+			{ "$or": [{ "age": {"$gt":10} }, {"age": {"$gt":10}}] },
+			{ "$or": [{ "age": {"$gt":10} }, {"age": 10}] }
+		]
   },
   "sort": ["+name"],
-  "select": ["Name", "Agent.Name", "Agent.Target.ID", "Agent.Target.MonitorLog.Cpu"]
+  "select": ["Name"]
 }

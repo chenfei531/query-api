@@ -113,7 +113,7 @@ func buildQueryTree(name string, params *model.Params) (*Node, error) {
 	}
 	sorted_fields := params.Select
 	sort.Strings(sorted_fields)
-	fmt.Printf("sorted: %s\n", sorted_fields)
+	//fmt.Printf("FilterExp: %s\nFilterArgs: %s\n", params.FilterExp, params.FilterArgs)
 	index := 0
 	error = buildTreeNode(sorted_fields, &index, &root, "", data)
 	if nil != error {
