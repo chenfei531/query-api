@@ -35,37 +35,69 @@ func getPrimayKey(data interface{}) string {
 	return "ID"
 }
 
-func buildTreeNode(fields []string, index int, currentNode *Node, currentData interface{}) error {
-	dataType := reflect.TypeOf(currentData)
-	primaryKey := getPrimayKey(currentData)
-	for i := index; i < len(fields); i++ {
-		fieldName := fields[i]
-		//handle nested fields
+//prefix include '.'
+func buildTreeNode(fields []string, index *int, currNode *Node, currPrefix string, currData interface{}) error {
+	dataType := reflect.TypeOf(currData)
+	primaryKey := getPrimayKey(currData) //should be here?
+	for ; *index < len(fields); (*index)++ {
+		i := *index
+		endOfCurrNode := !strings.HasPrefix(fields[i], currPrefix)
+		if endOfCurrNode {
+			(*index)--
+			return nil
+		}
+		//strip prefix
+		prefixLen := len(currPrefix)
+		fieldName := fields[i][prefixLen:]
 
-		//handle flat fields
-		_, found := dataType.FieldByName(fieldName)
-		if found {
-			currentNode.Params.Select = append(currentNode.Params.Select, fieldName)
-			if primaryKey == fieldName {
-				currentNode.ContainPK = true
+		elem := strings.SplitN(fieldName, ".", 2)
+		if len(elem) > 1 {
+			//handle nested field
+			name := elem[0]
+			prefix := currPrefix + name + "."
+			var newNodePtr *Node
+			l := len(currNode.Children)
+			if l > 0 && currNode.Children[l-1].Name == name {
+				newNodePtr = currNode.Children[l-1]
+			} else {
+				newNodePtr = &Node{Name: name, Params: model.Params{}, ContainPK: false}
+				currNode.Children = append(currNode.Children, newNodePtr)
 			}
+
+			data, error := model.GetObjectByName(name)
+			if nil != error {
+				return error
+			}
+			buildTreeNode(fields, index, newNodePtr, prefix, data)
 		} else {
-			_, found = dataType.FieldByName(fieldName + "s")
-			if !found {
-				return errors.New("field not found")
+			//handle flat field
+			_, found := dataType.FieldByName(fieldName)
+			if found {
+				currNode.Params.Select = append(currNode.Params.Select, fieldName)
+				if primaryKey == fieldName {
+					currNode.ContainPK = true
+				}
+			} else {
+				_, found = dataType.FieldByName(fieldName + "s")
+				if !found {
+					return errors.New(fmt.Sprintf("field not found: %s", fieldName))
+				}
+				//validation
+				node := Node{Name: fieldName, Params: model.Params{}, ContainPK: false}
+				/*
+				               if nil == currNode.Children {
+				   				//necessary?
+				   				currNode.Children = make([]*Node, 0, 4) //neccesary?
+				   			}
+				*/
+				node.Params.Select = append(node.Params.Select, "*")
+				currNode.Children = append(currNode.Children, &node)
 			}
-			//validation
-			node := Node{Name: fieldName, Params: model.Params{}, ContainPK: false}
-			if nil == currentNode.Children {
-				//necessary?
-				currentNode.Children = make([]*Node, 0, 4)
-			}
-			currentNode.Children = append(currentNode.Children, &node)
 		}
 	}
 	//add pk if not in select
-	if !currentNode.ContainPK {
-		currentNode.Params.Select = append(currentNode.Params.Select, primaryKey)
+	if !currNode.ContainPK {
+		currNode.Params.Select = append(currNode.Params.Select, primaryKey)
 	}
 
 	return nil
@@ -85,21 +117,11 @@ func buildQueryTree(name string, params *model.Params) (*Node, error) {
 	sorted_fields := params.Select
 	sort.Strings(sorted_fields)
 	fmt.Printf("sorted: %s\n", sorted_fields)
-	error = buildTreeNode(sorted_fields, 0, &root, data)
+	index := 0
+	error = buildTreeNode(sorted_fields, &index, &root, "", data)
 	if nil != error {
 		return nil, error
 	}
-
-	/*
-		emptyParams := model.Params{}
-		agentNode := Node{Name: "Agent", Params: emptyParams}
-		//targetNode := Node{Name: "Target", Params: emptyParams}
-		//agentNode.Children = []*Node{&targetNode}
-		root.Children = []*Node{&agentNode}
-	*/
-
-	b, _ := json.MarshalIndent(root, "", "    ")
-	fmt.Printf("tree:%s\n", b)
 	return &root, nil
 }
 
@@ -134,10 +156,7 @@ func (dm *GormDataManager) getNestedData(node *Node) (interface{}, error) {
 	if nil != error {
 		return "", error
 	}
-	//get params
-	//fmt.Printf("params:%s\n", params)
 	results, error := dm.getDataByParams(data, &params)
-	//fmt.Printf("results:%s\n", results)
 	if nil != error {
 		return "", error
 	}
@@ -168,6 +187,10 @@ func (dm *GormDataManager) getNestedData(node *Node) (interface{}, error) {
 		childParamsPtr.FilterArgs = make([]interface{}, 0, 2)
 		childParamsPtr.FilterArgs = append(childParamsPtr.FilterArgs, fkArgs)
 
+		childParamsPtr.Select = append(childParamsPtr.Select, fkDBName)
+
+		b, _ := json.MarshalIndent(child, "", "    ")
+		fmt.Printf("tree:%s\n", b)
 		children, _ := dm.getNestedData(child)
 		childrenReflect := reflect.ValueOf(children).Elem()
 

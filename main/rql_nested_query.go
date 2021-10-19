@@ -16,5 +16,6 @@ func main() {
 	queryStr := array[1]
 	dm := data.NewGormDataManager()
 	resp := rql.Do(dm, resource, queryStr)
+	//resp = ""
 	fmt.Printf("%s \n", resp)
 }

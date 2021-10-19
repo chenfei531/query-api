@@ -12,7 +12,7 @@ type User struct {
 	ID     uint    `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
 	Name   string  `rql:"filter,sort" json:",omitempty"`
 	Age    uint    `rql:"filter,sort" json:",omitempty"`
-	Agents []Agent `rqlp:"nested"`
+	Agents []Agent `rqlp:"nested" json:",omitempty"`
 }
 
 type Agent struct {
@@ -21,14 +21,14 @@ type Agent struct {
 	Name     string     `rql:"filter,sort" json:",omitempty"`
 	CreateAt *time.Time `rql:"filter,sort" json:",omitempty"`
 	UserID   uint       `rql:"filter,sort" json:",omitempty"`
-	Targets  []Target   `rqlp:"nested"`
+	Targets  []Target   `rqlp:"nested" json:",omitempty"`
 }
 
 type Target struct {
 	ID          uint         `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
 	Name        string       `rql:"filter,sort" json:",omitempty"`
 	AgentID     uint         `rql:"filter,sort" json:",omitempty"`
-	MonitorLogs []MonitorLog `rqlp:"nested"`
+	MonitorLogs []MonitorLog `rqlp:"nested" json:",omitempty"`
 }
 
 type MonitorLog struct {
