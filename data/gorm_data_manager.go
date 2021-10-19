@@ -35,14 +35,17 @@ func getPrimayKey(data interface{}) string {
 	return "ID"
 }
 
-//prefix include '.'
 func buildTreeNode(fields []string, index *int, currNode *Node, currPrefix string, currData interface{}) error {
 	dataType := reflect.TypeOf(currData)
-	primaryKey := getPrimayKey(currData) //should be here?
+	primaryKey := getPrimayKey(currData)
 	for ; *index < len(fields); (*index)++ {
 		i := *index
 		endOfCurrNode := !strings.HasPrefix(fields[i], currPrefix)
 		if endOfCurrNode {
+			//add pk if not in select
+			if !currNode.ContainPK {
+				currNode.Params.Select = append(currNode.Params.Select, primaryKey)
+			}
 			(*index)--
 			return nil
 		}
@@ -82,14 +85,8 @@ func buildTreeNode(fields []string, index *int, currNode *Node, currPrefix strin
 				if !found {
 					return errors.New(fmt.Sprintf("field not found: %s", fieldName))
 				}
-				//validation
-				node := Node{Name: fieldName, Params: model.Params{}, ContainPK: false}
-				/*
-				               if nil == currNode.Children {
-				   				//necessary?
-				   				currNode.Children = make([]*Node, 0, 4) //neccesary?
-				   			}
-				*/
+				//TODO: validation
+				node := Node{Name: fieldName, Params: model.Params{}, ContainPK: true}
 				node.Params.Select = append(node.Params.Select, "*")
 				currNode.Children = append(currNode.Children, &node)
 			}
@@ -130,7 +127,6 @@ func (dm *GormDataManager) getDataByParams(data interface{}, p *model.Params) (i
 	result := reflect.New(reflect.SliceOf(dataType)).Interface()
 	tx := dm.db.Model(data)
 	if len(p.FilterExp) > 0 {
-		//sometimes need to be p.FilterArgs..., why?
 		tx.Where(p.FilterExp, p.FilterArgs...)
 	}
 	if 0 != p.Offset {
@@ -170,9 +166,9 @@ func (dm *GormDataManager) getNestedData(node *Node) (interface{}, error) {
 		idList = append(idList, id)
 		idIndexMap[id] = uint(i)
 		//remove primary key of parent if necessary
-		//if !sp.containPK {
-		//	pkField.SetUint(0)
-		//}
+		if !node.ContainPK {
+			pkField.SetUint(0)
+		}
 	}
 
 	for _, child := range node.Children {

@@ -6,5 +6,5 @@ User
     "id": {"$gt": 0}
   },
   "sort": ["+name"],
-  "select": ["Name", "Agent", "Agent.Target", "Agent.Target.MonitorLog"]
+  "select": ["Name", "Agent.Name", "Agent.Target.ID", "Agent.Target.MonitorLog.Cpu"]
 }
