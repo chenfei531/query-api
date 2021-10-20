@@ -6,6 +6,14 @@ import (
 	"github.com/chenfei531/query-api/query/rql"
 )
 
+type Node struct {
+	Name       string
+	PrimaryKey string
+	ContainPK  bool
+	Params     rql.Params //TODO: to ptr?
+	Children   []*Node
+}
+
 func GetObjectByName(name string) (interface{}, error) {
 	switch name {
 	case "User":
@@ -21,12 +29,4 @@ func GetObjectByName(name string) (interface{}, error) {
 	default:
 		return nil, errors.New("Type Not Found")
 	}
-}
-
-type Node struct {
-	Name       string
-	PrimaryKey string
-	ContainPK  bool
-	Params     rql.Params //TODO: to ptr?
-	Children   []*Node
 }

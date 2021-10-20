@@ -5,12 +5,11 @@ import (
 	"github.com/graphql-go/graphql"
 
 	"github.com/chenfei531/query-api/model"
-	"github.com/chenfei531/query-api/query"
 )
 
 var UserSchema graphql.Schema
 
-func Init(dm query.DataReader) {
+func Init(dm *GraphDataReader) {
 	agentObject := graphql.NewObject(graphql.ObjectConfig{
 		Name:        "Agent",
 		Description: "agent",

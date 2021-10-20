@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -9,7 +10,15 @@ import (
 )
 
 func main() {
-	buf, _ := ioutil.ReadFile("testdata/nested_query")
+	argsWithoutProg := os.Args[1:]
+	var inputfile string
+	if len(argsWithoutProg) == 0 {
+		inputfile = "testquery/nested_query"
+	} else {
+		inputfile = argsWithoutProg[0]
+	}
+
+	buf, _ := ioutil.ReadFile(inputfile)
 	array := strings.SplitAfterN(string(buf), "\n", 2)
 	resource := strings.TrimSpace(array[0])
 	queryStr := array[1]
