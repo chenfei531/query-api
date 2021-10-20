@@ -81,8 +81,6 @@ func (dm *GormDataReader) getNestedData(node *Node) (interface{}, error) {
 
 		childParamsPtr.Select = append(childParamsPtr.Select, fkDBName)
 
-		//b, _ := json.MarshalIndent(child, "", "    ")
-		//fmt.Printf("tree:%s\n", b)
 		children, _ := dm.getNestedData(child)
 		childrenReflect := reflect.ValueOf(children).Elem()
 

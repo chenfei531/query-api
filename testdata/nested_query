@@ -9,5 +9,5 @@ User
 		]
   },
   "sort": ["+name"],
-  "select": ["Name", "Agent.Name", "Agent.Target.Name", "Agent.Target.MonitorLog.Cpu"]
+  "select": ["Name", "Agent.Name", "Agent.Target.Name", "Agent.Target.MonitorLog.Cpu", "Agent.Target.EventLog.Event"]
 }

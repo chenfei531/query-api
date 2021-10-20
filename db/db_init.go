@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(&model.User{}, &model.Agent{}, &model.Target{}, &model.MonitorLog{})
+	db.AutoMigrate(&model.User{}, &model.Agent{}, &model.Target{}, &model.MonitorLog{}, &model.EventLog{})
 
 	// Create
 	for i := 0; i < 10; i++ {
@@ -44,13 +44,15 @@ func main() {
 			createAt := time.Now()
 			agent := model.Agent{Name: "agent_" + randomStr(), CreateAt: &createAt, UserID: user.ID}
 			db.Create(&agent)
-			for k := 0; k < 5; k++ {
+			for k := 0; k < 2; k++ {
 				target := model.Target{Name: "target_" + randomStr(), AgentID: agent.ID}
 				db.Create(&target)
-				for x := 0; x < 5; x++ {
+				for x := 0; x < 2; x++ {
 					createAt = time.Now()
 					log := model.MonitorLog{Timestamp: &createAt, Cpu: randomInt(100), Mem: randomInt(100), TargetID: target.ID}
 					db.Create(&log)
+					event := model.EventLog{Timestamp: &createAt, Event: "event_" + randomStr(), TargetID: target.ID}
+					db.Create(&event)
 				}
 			}
 		}

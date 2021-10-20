@@ -17,6 +17,7 @@ func NewQueryParser() *QueryParser {
 	return &QueryParser{}
 }
 
+//TODO: get pk/index by reflect tags
 func (qp *QueryParser) getPrimayKey(data interface{}) string {
 	return "ID"
 }
@@ -102,7 +103,6 @@ func (qp *QueryParser) buildQueryTree(name string, params *rql.Params) (*Node, e
 	}
 	sorted_fields := params.Select
 	sort.Strings(sorted_fields)
-	//fmt.Printf("FilterExp: %s\nFilterArgs: %s\n", params.FilterExp, params.FilterArgs)
 	index := 0
 	error = qp.buildTreeNode(sorted_fields, &index, &root, "", data)
 	if nil != error {
@@ -119,7 +119,6 @@ func (qp *QueryParser) GetQueryTree(name string, request string) (*Node, error) 
 	//TODO: cache Parser
 	rqlParser := rql.MustNewParser(rql.Config{Model: data, FieldSep: "."})
 	params, error := rqlParser.Parse([]byte(request))
-	//p := *(rql.Params)(params)
 	if nil != error {
 		return nil, error
 	}

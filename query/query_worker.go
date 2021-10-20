@@ -23,6 +23,7 @@ func (qw *QueryWorker) Query(resourceName string, queryStr string) (string, erro
 	if error != nil {
 		return "", error
 	}
+
 	result, error := qw.gormDataReader.GetData(root)
 	if error != nil {
 		return "", error
