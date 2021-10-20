@@ -5,4 +5,5 @@ build:
 	#go build -o bin/graphql_agent main/graphql_agent.go
 	#go build -o bin/db_init db/db_init.go
 	#go build -o bin/server server/server.go
-	go build -o bin/rql_nested_query main/rql_nested_query.go
+	#go build -o bin/rql_nested_query main/rql_nested_query.go
+	go build -o bin/query_worker main/query_worker.go
