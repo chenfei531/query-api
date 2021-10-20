@@ -2,9 +2,11 @@ package query
 
 import (
 	"errors"
-	"time"
+	"github.com/chenfei531/query-api/model"
+	"github.com/chenfei531/query-api/query/rql"
 )
 
+/*
 type User struct {
 	ID     uint    `gorm:"primary_key" rql:"filter,sort" json:",omitempty"`
 	Name   string  `rql:"filter,sort" json:",omitempty"`
@@ -34,22 +36,24 @@ type MonitorLog struct {
 	Mem       uint       `rql:"filter,sort" json:",omitempty"`
 	TargetID  uint       `rql:"filter,sort" json:",omitempty"`
 }
+*/
 
 func GetObjectByName(name string) (interface{}, error) {
 	switch name {
 	case "User":
-		return User{}, nil
+		return model.User{}, nil
 	case "Agent":
-		return Agent{}, nil
+		return model.Agent{}, nil
 	case "Target":
-		return Target{}, nil
+		return model.Target{}, nil
 	case "MonitorLog":
-		return MonitorLog{}, nil
+		return model.MonitorLog{}, nil
 	default:
 		return nil, errors.New("Type Not Found")
 	}
 }
 
+/*
 type Params struct {
 	// Limit represents the number of rows returned by the SELECT statement.
 	Limit int
@@ -70,11 +74,11 @@ type Params struct {
 	FilterExp  string
 	FilterArgs []interface{}
 }
-
+*/
 type Node struct {
 	Name       string
 	PrimaryKey string
 	ContainPK  bool
-	Params     Params //TODO: to ptr?
+	Params     rql.Params //TODO: to ptr?
 	Children   []*Node
 }

@@ -1,11 +1,8 @@
 package model
 
 import (
-	"errors"
 	"time"
 )
-
-//ModelMap := map[string]
 
 type User struct {
 	//gorm.Model
@@ -39,6 +36,7 @@ type MonitorLog struct {
 	TargetID  uint       `rql:"filter,sort" json:",omitempty"`
 }
 
+/*
 func GetObjectByName(name string) (interface{}, error) {
 	switch name {
 	case "User":
@@ -74,3 +72,4 @@ type Params struct {
 	FilterExp  string
 	FilterArgs []interface{}
 }
+*/

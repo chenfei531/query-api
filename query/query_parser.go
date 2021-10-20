@@ -49,7 +49,7 @@ func (qp *QueryParser) buildTreeNode(fields []string, index *int, currNode *Node
 			if l > 0 && currNode.Children[l-1].Name == name {
 				newNodePtr = currNode.Children[l-1]
 			} else {
-				newNodePtr = &Node{Name: name, Params: Params{}, ContainPK: false}
+				newNodePtr = &Node{Name: name, Params: rql.Params{}, ContainPK: false}
 				currNode.Children = append(currNode.Children, newNodePtr)
 			}
 
@@ -75,7 +75,7 @@ func (qp *QueryParser) buildTreeNode(fields []string, index *int, currNode *Node
 					return errors.New(fmt.Sprintf("field not found: %s", fieldName))
 				}
 				//TODO: validation
-				node := Node{Name: fieldName, Params: Params{}, ContainPK: true}
+				node := Node{Name: fieldName, Params: rql.Params{}, ContainPK: true}
 				node.Params.Select = append(node.Params.Select, "*")
 				currNode.Children = append(currNode.Children, &node)
 			}
@@ -89,8 +89,8 @@ func (qp *QueryParser) buildTreeNode(fields []string, index *int, currNode *Node
 	return nil
 }
 
-func (qp *QueryParser) buildQueryTree(name string, params *Params) (*Node, error) {
-	rp := Params{Limit: params.Limit, Offset: params.Offset, Sort: params.Sort}
+func (qp *QueryParser) buildQueryTree(name string, params *rql.Params) (*Node, error) {
+	rp := rql.Params{Limit: params.Limit, Offset: params.Offset, Sort: params.Sort}
 	rp.FilterExp = params.FilterExp
 	rp.FilterArgs = params.FilterArgs
 	//parse select into tree structure
@@ -119,9 +119,9 @@ func (qp *QueryParser) GetQueryTree(name string, request string) (*Node, error) 
 	//TODO: cache Parser
 	rqlParser := rql.MustNewParser(rql.Config{Model: data, FieldSep: "."})
 	params, error := rqlParser.Parse([]byte(request))
-	p := (*Params)(params)
+	//p := *(rql.Params)(params)
 	if nil != error {
 		return nil, error
 	}
-	return qp.buildQueryTree(name, p)
+	return qp.buildQueryTree(name, params)
 }

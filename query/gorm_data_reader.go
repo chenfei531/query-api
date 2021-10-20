@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/chenfei531/query-api/model"
+	"github.com/chenfei531/query-api/query/rql"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +18,7 @@ func NewGormDataReader(db *gorm.DB) *GormDataReader {
 	return &GormDataReader{db}
 }
 
-func (dm *GormDataReader) getDataByParams(data interface{}, p *Params) (interface{}, error) {
+func (dm *GormDataReader) getDataByParams(data interface{}, p *rql.Params) (interface{}, error) {
 	dataType := reflect.TypeOf(data)
 	result := reflect.New(reflect.SliceOf(dataType)).Interface()
 	tx := dm.db.Model(data)
@@ -113,4 +115,17 @@ func (dm *GormDataReader) GetData(root *Node) (string, error) {
 		return "", error
 	}
 	return string(b), nil
+}
+
+//for graphql sample
+func (dm *GormDataReader) GetUserById(id int) model.User {
+	var user model.User
+	dm.db.Preload("Agents").First(&user, id)
+	return user
+}
+
+func (dm *GormDataReader) GetAgents(offset int, limit int) []model.Agent {
+	var agents []model.Agent
+	dm.db.Offset(offset).Limit(limit).Find(&agents)
+	return agents
 }

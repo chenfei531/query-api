@@ -12,11 +12,7 @@ import (
 	"sync"
 	"time"
 	"unicode"
-
-	"github.com/chenfei531/query-api/model"
 )
-
-type Params model.Params
 
 //go:generate easyjson -omit_empty -disallow_unknown_fields -snake_case rql.go
 
@@ -78,14 +74,14 @@ type Query struct {
 //	}
 //	return users, nil
 //
-/*
+
 type Params struct {
 	// Limit represents the number of rows returned by the SELECT statement.
 	Limit int
 	// Offset specifies the offset of the first row to return. Useful for pagination.
 	Offset int
 	// Select contains the expression for the `SELECT` clause defined in the Query.
-	Select string
+	Select []string
 	// Sort used as a parameter for the `ORDER BY` clause. For example, "age desc, name".
 	Sort string
 	// FilterExp and FilterArgs come together and used as a parameters for the `WHERE` clause.
@@ -99,7 +95,7 @@ type Params struct {
 	FilterExp  string
 	FilterArgs []interface{}
 }
-*/
+
 // ParseError is type of error returned when there is a parsing problem.
 type ParseError struct {
 	msg string

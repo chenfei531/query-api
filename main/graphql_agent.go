@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/chenfei531/query-api/data"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+
+	"github.com/chenfei531/query-api/query"
 	"github.com/chenfei531/query-api/query/graphql"
 )
 
 func main() {
-	dm := data.NewSqliteDataManager()
+	db, _ := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	dm := query.NewGormDataReader(db)
 	graphql.Init(dm)
-	buf, _ := ioutil.ReadFile("test/data/graphql_agent")
+	buf, _ := ioutil.ReadFile("testdata/graphql_agent")
 	query := string(buf)
 	result := graphql.Execute(query)
 	fmt.Printf("%s \n", result)

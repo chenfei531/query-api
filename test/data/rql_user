@@ -1,9 +1,0 @@
-{
-  "limit": 2,
-  "offset": 0,
-  "filter": {
-    "id": {"$gt": 0}
-  },
-  "sort": ["+name"],
-  "select": ["Name", "Agent.name", "Agent.create_at"]
-}
