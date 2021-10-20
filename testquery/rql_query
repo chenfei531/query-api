@@ -1,6 +1,6 @@
 User
 {
-  "limit": 4,
+  "limit": 10,
   "offset": 0,
   "filter": {
         "$and": [
@@ -18,5 +18,8 @@ User
         "name": {"$like": "user_%"}
   },
   "sort": ["+name"],
-  "select": ["Name", "Agent.Name", "Agent.Target.Name", "Agent.Target.MonitorLog.Cpu", "Agent.Target.EventLog.Event"]
+  "select": ["Name", "Age"]
 }
+
+
+
